@@ -5,17 +5,96 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeNet Portal</title>
+    <title>Codenet Portal</title>
     <link rel="stylesheet" href="./style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.1-0/firebase-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.1-0/firebase-database.js"></script>
     <link rel="icon" type="image/x-icon" href="logo_white.ico">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .inputBox {
+            margin-bottom: 15px;
+        }
+
+        .inputBox label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .inputBox input,
+        .inputBox select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: #252525;
+            color: white;
+        }
+
+        .btn button {
+            width: 100%;
+            padding: 10px;
+            /* background-color: #6200ee; */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn button:hover {
+            /* background-color: #3700b3; */
+        }
+
+        #successMessage {
+            margin-top: 20px;
+            padding: 10px;
+            background: #2e7d32;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        #successMessage p {
+            margin: 0;
+        }
+
+        #googleFormLink {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
-    <canvas></canvas>
     <div class="container">
-        <h1 class="title"><img src="logo_white.png" class="logo" alt=""> CodeNet Quests</h1>
+        <h1 class="title"><img src="logo_white.png" class="logo" alt="">CodeNet Quests</h1>
         <form action="" id="questPortalForm" class="form">
             <div class="inputBox">
                 <label for="userName">Name</label>
@@ -46,10 +125,18 @@
             </div>
         </form>
 
-        <div id="successMessage" style="display: none; margin-top: 20px;">
-            <p><strong>Success!</strong> Your quest details have been stored in the backend.</p>
-            <p><strong>Download Time:</strong> <span id="downloadTime"></span></p>
-            <p><strong>Submission Deadline:</strong> <span id="submissionDeadline"></span></p>
+        <div id="successMessage" style="display: none; margin-top: 20px; color: white;">
+            <p>
+                <strong>Success!</strong> Your quest details have been stored in the backend.
+            </p>
+            <p>
+                <strong>Download Time:</strong> <span id="downloadTime"></span>
+            </p>
+            <p>
+                <strong>Submission Deadline:</strong> 
+                <span id="submissionDeadline"></span> 
+                | <a href="" target="_blank" id="googleFormLink" style="color: white; text-decoration: underline;">Submit via Google Form</a>
+            </p>
         </div>
     </div>
 
@@ -60,7 +147,7 @@
             authDomain: "portal-bce40.firebaseapp.com",
             databaseURL: "https://portal-bce40-default-rtdb.firebaseio.com/",
             projectId: "portal-bce40",
-            storageBucket: "portal-bce40.appspot.com",
+            storageBucket: "portal-bce40.firebasestorage.app",
             messagingSenderId: "338576186844",
             appId: "1:338576186844:web:1afb2ea6f4464f84708319",
             measurementId: "G-BZ3K2HF01W"
@@ -68,7 +155,7 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const questsPortalDB = firebase.database().ref("questsportal");
+        const questsportalDB = firebase.database().ref("questsPortal");
 
         const quests = {
             "Programming": ["Python Basics", "Web Development", "Data Structures"],
@@ -108,37 +195,40 @@
                 return;
             }
 
-            // Get the current timestamp
-            const downloadTimestamp = new Date().toISOString();
-            const submissionDeadline = calculateSubmissionDeadline(downloadTimestamp);
-
-            // Save the quest details to Firebase
-            saveQuestDownload(userName, category, quest, downloadTimestamp, submissionDeadline);
-
-            // Update UI with the success message and timestamps
-            document.getElementById("successMessage").style.display = "block";
-            document.getElementById("downloadTime").textContent = new Date(downloadTimestamp).toLocaleString();
-            document.getElementById("submissionDeadline").textContent = new Date(submissionDeadline).toLocaleDateString();
+            saveBooking(userName, category, quest);
         });
 
-        // Save download details to Firebase
-        function saveQuestDownload(userName, category, quest, downloadTimestamp, submissionDeadline) {
-            const questRef = questsPortalDB.child(`${category}/${quest}`);
-            questRef.push({
-                userName: userName,
-                downloadTime: downloadTimestamp,
-                submissionDeadline: submissionDeadline
-            }).catch((error) => {
-                console.error("Error saving download details:", error);
-                alert("An error occurred while saving the download details.");
-            });
-        }
+        // Save booking to Firebase and show success message
+        function saveBooking(userName, category, quest) {
+            const questRef = questsportalDB.child(`${category}/${quest}`);
+            const downloadTime = new Date();
+            const deadline = new Date();
+            deadline.setDate(downloadTime.getDate() + 3);
 
-        // Calculate submission deadline (3 days from download time)
-        function calculateSubmissionDeadline(downloadTimestamp) {
-            const downloadDate = new Date(downloadTimestamp);
-            downloadDate.setDate(downloadDate.getDate() + 3);
-            return downloadDate.toISOString();
+            questRef.set({
+                userName: userName,
+                downloadedAt: downloadTime.toString(),
+                submissionDeadline: deadline.toString()
+            }).then(() => {
+                const formattedDownloadTime = downloadTime.toLocaleString();
+                const formattedDeadline = deadline.toLocaleString();
+
+                document.getElementById("downloadTime").innerText = formattedDownloadTime;
+                document.getElementById("submissionDeadline").innerText = formattedDeadline;
+                document.getElementById("googleFormLink").href = "https://forms.google.com";
+                document.getElementById("successMessage").style.display = "block";
+
+                // Trigger file download
+                const downloadLink = document.createElement("a");
+                downloadLink.href = `./quests/${quest}.pdf`;
+                downloadLink.download = `${quest}.pdf`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            }).catch((error) => {
+                console.error("Error saving data:", error);
+                alert("An error occurred while saving the booking.");
+            });
         }
 
         // Helper function to get input values
