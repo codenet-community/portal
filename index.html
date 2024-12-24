@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.1-0/firebase-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.1-0/firebase-database.js"></script>
     <link rel="icon" type="image/x-icon" href="logo_white.ico">
-    <style>
+    <!-- <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -89,7 +88,7 @@
             color: white;
             text-decoration: underline;
         }
-    </style>
+    </style> -->
 </head>
 
 <body>
@@ -215,7 +214,7 @@
 
                 document.getElementById("downloadTime").innerText = formattedDownloadTime;
                 document.getElementById("submissionDeadline").innerText = formattedDeadline;
-                document.getElementById("googleFormLink").href = "https://forms.google.com";
+                document.getElementById("googleFormLink").href = "#"; // google forms link here
                 document.getElementById("successMessage").style.display = "block";
 
                 // Trigger file download
@@ -237,5 +236,4 @@
         }
     </script>
 </body>
-
 </html>
