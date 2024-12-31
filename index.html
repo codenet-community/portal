@@ -123,14 +123,43 @@
             <p>
                 <strong>Submission Deadline:</strong> 
                 <span id="submissionDeadline"></span> 
-                | <a href="" target="_blank" id="googleFormLink" style="color: white; text-decoration: underline;">Submit via Google Form</a>
+                | <a href="" target="_blank" id="googleFormLink"></a>
             </p>
         </div>
     </div>
 
+    <div class="info_container">
+        <div class="btn">
+            <label for="exportCategory">Select Category:</label>
+            <select id="exportCategory">
+                <option value="" selected>All Categories</option>
+                <option value="Frontend">Frontend</option>
+                <option value="Backend">Backend</option>
+                <option value="Ui_Ux">UI & UX</option>
+                <option value="Game_dev">Game Development</option>
+                <option value="App_Dev">App Development</option>
+                <option value="competitive_prog">Competitive Programming</option>
+            </select>
+            <button type="button" class="exportBtn" onclick="exportToExcel()">Export to Excel</button>
+        </div>
+    </div>
+
+    
+    
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <script>
-        // Firebase configuration
+
+
+
+    // ——————————————————————————————————————————————————
+    //              Firebase configuration
+    // ——————————————————————————————————————————————————
+
+
+        
         const firebaseConfig = {
             apiKey: "AIzaSyBjWCAC_gazDGfozuqC3VOdCYazK_UdPP8",
             authDomain: "portal-bce40.firebaseapp.com",
@@ -149,7 +178,7 @@
         const quests = {
             "Frontend": ["HTML_Basics_Your_First_Webpage"],
             "Backend": [],
-            "Ui_Ux": [],
+            "Ui_Ux": ["UI_UX_DESIGN-1"],
             "Game_dev": [],
             "App_Dev": [],
             "competitive_prog": []
@@ -188,45 +217,148 @@
             saveBooking(userName, category, quest);
         });
 
-        // Save booking to Firebase and trigger file download
+        
+    // ——————————————————————————————————————————————————
+    // Save booking to Firebase and trigger file download
+    // ——————————————————————————————————————————————————
+
+
+
         function saveBooking(userName, category, quest) {
-            const questRef = questsportalDB.child(`${category}/${quest}`);
-            const downloadTime = new Date();
-            const deadline = new Date();
-            deadline.setDate(downloadTime.getDate() + 3);
+        const questRef = questsportalDB.child(category);
+        const newEntryRef = questRef.push();
 
-            questRef.set({
-                userName: userName,
-                downloadedAt: downloadTime.toString(),
-                submissionDeadline: deadline.toString()
-            }).then(() => {
-                const formattedDownloadTime = downloadTime.toLocaleString();
-                const formattedDeadline = deadline.toLocaleString();
+        const downloadTime = new Date();
+        const deadline = new Date();
+        deadline.setDate(downloadTime.getDate() + 7);
 
-                document.getElementById("downloadTime").innerText = formattedDownloadTime;
-                document.getElementById("submissionDeadline").innerText = formattedDeadline;
-                document.getElementById("googleFormLink").href = "#"; // google forms link here
-                document.getElementById("successMessage").style.display = "block";
+        // Function to format the date and time
+        function formatISTDateTime(date) {
+            const options = {
+                weekday: 'short', // e.g., Mon
+                year: 'numeric',  // e.g., 2024
+                month: 'short',   // e.g., Dec
+                day: '2-digit',   // e.g., 30
+                timeZone: 'Asia/Kolkata',
+                timeZoneName: 'short'
+            };
 
-                // Trigger file download
-                const downloadLink = document.createElement("a");
-                downloadLink.href = `./quests/${quest}.pdf`;
-                downloadLink.download = `${quest}.pdf`;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-            }).catch((error) => {
-                console.error("Error saving data:", error);
-                alert("An error occurred while saving the booking.");
-            });
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'Asia/Kolkata'
+            };
+
+            const datePart = date.toLocaleDateString('en-US', options);
+            const timePart = date.toLocaleTimeString('en-US', timeOptions);
+
+            return `(${datePart}) At (  ${timePart})`;
         }
+
+        // Format both downloadTime and deadline before saving to Firebase
+        const formattedDownloadTime = formatISTDateTime(downloadTime);
+        const formattedDeadline = formatISTDateTime(deadline);
+
+        newEntryRef.set({
+            userName: userName,
+            quest: quest,
+            downloadedAt: formattedDownloadTime, // Store formatted time
+            submissionDeadline: formattedDeadline // Store formatted deadline
+        }).then(() => {
+            // Update the UI with the formatted times
+            document.getElementById("downloadTime").innerText = formattedDownloadTime;
+            document.getElementById("submissionDeadline").innerText = formattedDeadline;
+            document.getElementById("googleFormLink").href = "#"; // Add the Google Forms link here
+            document.getElementById("successMessage").style.display = "block";
+
+            // Trigger file download
+            const downloadLink = document.createElement("a");
+            downloadLink.href = `./quests/${quest}.pdf`;
+            downloadLink.download = `${quest}.pdf`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }).catch((error) => {
+            console.error("Error saving data:", error);
+            alert("An error occurred while downloading.");
+        });
+    }
+
 
         // Helper function to get input values
         function getElementVal(id) {
             return document.getElementById(id).value;
         }
 
-        // Preloader 
+
+
+    // ——————————————————————————————————————————————————
+    //                  EXCEL CONNECTIVITY
+    // ——————————————————————————————————————————————————
+
+
+        // Function to export Firebase data to Excel
+        function exportToExcel() {
+            const category = document.getElementById("exportCategory").value; // Selected category
+            const questRef = category ? questsportalDB.child(category) : questsportalDB; // Reference all or specific
+
+            // Fetch data from Firebase
+            questRef.once("value")
+                .then((snapshot) => {
+                    const data = snapshot.val();
+
+                    if (!data) {
+                        alert("No data available.");
+                        return;
+                    }
+
+                    // Prepare data for Excel
+                    const rows = [];
+
+                    // Header row
+                    rows.push(["Key", "Name", "Quest", "Downloaded At", "Submission Deadline"]);
+
+                    // Populate rows with data
+                    Object.entries(data).forEach(([key, value]) => {
+                        if (typeof value === 'object') { // Ensure value is a valid object
+                            rows.push([
+                                key,
+                                value.userName || "N/A",
+                                value.quest || "N/A",
+                                value.downloadedAt || "N/A",
+                                value.submissionDeadline || "N/A"
+                            ]);
+                        }
+                    });
+
+                    // Create a workbook and a worksheet
+                    const workbook = XLSX.utils.book_new();
+                    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+                    const sheetName = category || "All_Categories";
+                    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+                    // Write the Excel file and trigger download
+                    const excelFileName = `${sheetName}_data.xlsx`;
+                    XLSX.writeFile(workbook, excelFileName);
+                })
+                .catch((error) => {
+                    console.error("Error fetching data for export:", error);
+                    alert("An error occurred while fetching data for export.");
+                });
+        }
+
+                    
+            
+
+
+    // ——————————————————————————————————————————————————
+    //                  PRE-LOADER
+    // ——————————————————————————————————————————————————
+
+
+
+        // Preloader page loading
 
         var loader = document.querySelector(".preloader");
 
@@ -235,89 +367,87 @@
         });
 
 
+// Text Effect
 
-    class TextScramble {
-    constructor(el) {
-        this.el = el;
-        this.chars = "!<>-_\\/[]{}—=+*^?#___jds@^%%$&()";
-        this.update = this.update.bind(this);
-    }
-    setText(newText) {
-        const oldText = this.el.innerText;
-        const length = Math.max(oldText.length, newText.length);
-        const promise = new Promise(resolve => this.resolve = resolve);
-        this.queue = [];
-        for (let i = 0; i < length; i++) {
-        const from = oldText[i] || '';
-        const to = newText[i] || '';
-        const start = Math.floor(Math.random() * 70);
-        const end = start + Math.floor(Math.random() * 70);
-        this.queue.push({ from, to, start, end });
+        class TextScramble {
+        constructor(el) {
+            this.el = el;
+            this.chars = "!<>-_\\/[]{}—=+*^?#__@^%%$&()";
+            this.update = this.update.bind(this);
         }
-        cancelAnimationFrame(this.frameRequest);
-        this.frame = 0;
-        this.update();
-        return promise;
-    }
-    update() {
-        let output = "";
-        let complete = 0;
-        for (let i = 0, n = this.queue.length; i < n; i++) {
-        let { from, to, start, end, char } = this.queue[i];
-        if (this.frame >= end) {
-            complete++;
-            output += to;
-        } else if (this.frame >= start) {
-            if (!char || Math.random() < 0.28) {
-            char = this.randomChar();
-            this.queue[i].char = char;
+        setText(newText) {
+            const oldText = this.el.innerText;
+            const length = Math.max(oldText.length, newText.length);
+            const promise = new Promise(resolve => this.resolve = resolve);
+            this.queue = [];
+            for (let i = 0; i < length; i++) {
+            const from = oldText[i] || '';
+            const to = newText[i] || '';
+            const start = Math.floor(Math.random() * 70);
+            const end = start + Math.floor(Math.random() * 70);
+            this.queue.push({ from, to, start, end });
             }
-            output += `<span class="dud">${char}</span>`;
-        } else {
-            output += from;
+            cancelAnimationFrame(this.frameRequest);
+            this.frame = 0;
+            this.update();
+            return promise;
         }
+        update() {
+            let output = "";
+            let complete = 0;
+            for (let i = 0, n = this.queue.length; i < n; i++) {
+            let { from, to, start, end, char } = this.queue[i];
+            if (this.frame >= end) {
+                complete++;
+                output += to;
+            } else if (this.frame >= start) {
+                if (!char || Math.random() < 0.28) {
+                char = this.randomChar();
+                this.queue[i].char = char;
+                }
+                output += `<span class="dud">${char}</span>`;
+            } else {
+                output += from;
+            }
+            }
+            this.el.innerHTML = output;
+            if (complete === this.queue.length) {
+            this.resolve();
+            } else {
+            this.frameRequest = requestAnimationFrame(this.update);
+            this.frame++;
+            }
         }
-        this.el.innerHTML = output;
-        if (complete === this.queue.length) {
-        this.resolve();
-        } else {
-        this.frameRequest = requestAnimationFrame(this.update);
-        this.frame++;
-        }
-    }
-    randomChar() {
-        return this.chars[Math.floor(Math.random() * this.chars.length)];
-    }}
+        randomChar() {
+            return this.chars[Math.floor(Math.random() * this.chars.length)];
+        }}
 
 
-    // ——————————————————————————————————————————————————
-    // Example
-    // ——————————————————————————————————————————————————
 
-    const phrases = [
-    "WE",
-"WELCOME",
-"YOU!!!"];
+            const phrases = [
+            "WE",
+        "WELCOME",
+        "YOU!!!"];
 
 
-    const el = document.querySelector(".text");
-    const fx = new TextScramble(el);
+        const el = document.querySelector(".text");
+        const fx = new TextScramble(el);
 
-    let counter = 0;
-    const next = () => {
-        fx.setText(phrases[counter]).then(() => {
-            setTimeout(next, 1000);
-        });
-        counter = (counter + 1) % phrases.length;
-    };
+        let counter = 0;
+        const next = () => {
+            fx.setText(phrases[counter]).then(() => {
+                setTimeout(next, 1000);
+            });
+            counter = (counter + 1) % phrases.length;
+        };
 
-    next();
-
-
+        next();
 
 
 
     </script>
+    
+
 </body>
 </html>
 
@@ -329,10 +459,26 @@
 
 <!-- 
 
-1. The loader
-2. Make a portal for submission as well
-3.
+add proper css
 
 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
