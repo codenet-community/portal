@@ -1,91 +1,289 @@
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBjWCAC_gazDGfozuqC3VOdCYazK_UdPP8",
-    authDomain: "portal-bce40.firebaseapp.com",
-    databaseURL: "https://portal-bce40-default-rtdb.firebaseio.com/",
-    projectId: "portal-bce40",
-    storageBucket: "portal-bce40.appspot.com",
-    messagingSenderId: "338576186844",
-    appId: "1:338576186844:web:1afb2ea6f4464f84708319",
-    measurementId: "G-BZ3K2HF01W"
-};
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const questsPortalDB = firebase.database().ref("questsportal");
+    // ——————————————————————————————————————————————————
+    //              Firebase configuration
+    // ——————————————————————————————————————————————————
 
-const quests = {
-    "Programming": ["Python Basics", "Web Development", "Data Structures"],
-    "Design": ["UI/UX Design", "Graphic Design", "Logo Creation"],
-    "Writing": ["Content Writing", "Blog Posts", "Copywriting"],
-    "Marketing": ["Social Media Campaign", "SEO Optimization", "Email Marketing"],
-    "Management": ["Task Coordination", "Event Planning", "Team Management"]
-};
 
-// Populate quests based on category selection
-document.getElementById("categorySelect").addEventListener("change", function () {
-    const category = this.value;
-    const questSelect = document.getElementById("questSelect");
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjWCAC_gazDGfozuqC3VOdCYazK_UdPP8",
+            authDomain: "portal-bce40.firebaseapp.com",
+            databaseURL: "https://portal-bce40-default-rtdb.firebaseio.com/",
+            projectId: "portal-bce40",
+            storageBucket: "portal-bce40.firebasestorage.app",
+            messagingSenderId: "338576186844",
+            appId: "1:338576186844:web:1afb2ea6f4464f84708319",
+            measurementId: "G-BZ3K2HF01W"
+        };
 
-    questSelect.innerHTML = '<option value="" disabled selected>Select Quest</option>';
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const questsportalDB = firebase.database().ref("questsPortal");
 
-    if (quests[category]) {
-        quests[category].forEach((quest) => {
-            const option = document.createElement("option");
-            option.value = quest;
-            option.textContent = quest;
-            questSelect.appendChild(option);
+        const quests = {
+            "Frontend": ["HTML_Basics_Your_First_Webpage"],
+            "Backend": [],
+            "Ui_Ux": ["UI_UX_DESIGN-1"],
+            "Game_dev": [],
+            "App_Dev": [],
+            "competitive_prog": []
+        };
+
+        // Populate quests based on category selection
+        document.getElementById("categorySelect").addEventListener("change", function () {
+            const category = this.value;
+            const questSelect = document.getElementById("questSelect");
+
+            questSelect.innerHTML = '<option value="" disabled selected>Select Quest</option>';
+
+            if (quests[category]) {
+                quests[category].forEach((quest) => {
+                    const option = document.createElement("option");
+                    option.value = quest;
+                    option.textContent = quest;
+                    questSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Handle form submission
+        document.getElementById("questPortalForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const userName = getElementVal("userName");
+            const category = getElementVal("categorySelect");
+            const quest = getElementVal("questSelect");
+
+            if (!userName || !category || !quest) {
+                alert("All fields are required!");
+                return;
+            }
+
+            saveBooking(userName, category, quest);
+        });
+
+        
+    // ——————————————————————————————————————————————————
+    // Save booking to Firebase and trigger file download
+    // ——————————————————————————————————————————————————
+
+
+
+        function saveBooking(userName, category, quest) {
+        const questRef = questsportalDB.child(category);
+        const newEntryRef = questRef.push();
+
+        const downloadTime = new Date();
+        const deadline = new Date();
+        deadline.setDate(downloadTime.getDate() + 7);
+
+        // Function to format the date and time
+        function formatISTDateTime(date) {
+            const options = {
+                weekday: 'short', // e.g., Mon
+                year: 'numeric',  // e.g., 2024
+                month: 'short',   // e.g., Dec
+                day: '2-digit',   // e.g., 30
+                timeZone: 'Asia/Kolkata',
+                timeZoneName: 'short'
+            };
+
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'Asia/Kolkata'
+            };
+
+            const datePart = date.toLocaleDateString('en-US', options);
+            const timePart = date.toLocaleTimeString('en-US', timeOptions);
+
+            return `(${datePart}) At (  ${timePart})`;
+        }
+
+        // Format both downloadTime and deadline before saving to Firebase
+        const formattedDownloadTime = formatISTDateTime(downloadTime);
+        const formattedDeadline = formatISTDateTime(deadline);
+
+        newEntryRef.set({
+            userName: userName,
+            quest: quest,
+            downloadedAt: formattedDownloadTime, // Store formatted time
+            submissionDeadline: formattedDeadline // Store formatted deadline
+        }).then(() => {
+            // Update the UI with the formatted times
+            document.getElementById("downloadTime").innerText = formattedDownloadTime;
+            document.getElementById("submissionDeadline").innerText = formattedDeadline;
+            document.getElementById("googleFormLink").href = "#"; // Add the Google Forms link here
+            document.getElementById("successMessage").style.display = "block";
+
+            // Trigger file download
+            const downloadLink = document.createElement("a");
+            downloadLink.href = `./quests/${quest}.pdf`;
+            downloadLink.download = `${quest}.pdf`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }).catch((error) => {
+            console.error("Error saving data:", error);
+            alert("An error occurred while downloading.");
         });
     }
-});
 
-// Handle form submission
-document.getElementById("questPortalForm").addEventListener("submit", function (event) {
-    event.preventDefault();
 
-    const userName = getElementVal("userName");
-    const category = getElementVal("categorySelect");
-    const quest = getElementVal("questSelect");
+        // Helper function to get input values
+        function getElementVal(id) {
+            return document.getElementById(id).value;
+        }
 
-    if (!userName || !category || !quest) {
-        alert("All fields are required!");
-        return;
-    }
 
-    // Get the current timestamp
-    const downloadTimestamp = new Date().toISOString();
-    const submissionDeadline = calculateSubmissionDeadline(downloadTimestamp);
 
-    // Save the quest details to Firebase
-    saveQuestDownload(userName, category, quest, downloadTimestamp, submissionDeadline);
+    // ——————————————————————————————————————————————————
+    //                  EXCEL CONNECTIVITY
+    // ——————————————————————————————————————————————————
 
-    // Update UI with the success message and timestamps
-    document.getElementById("successMessage").style.display = "block";
-    document.getElementById("downloadTime").textContent = new Date(downloadTimestamp).toLocaleString();
-    document.getElementById("submissionDeadline").textContent = new Date(submissionDeadline).toLocaleDateString();
-});
 
-// Save download details to Firebase
-function saveQuestDownload(userName, category, quest, downloadTimestamp, submissionDeadline) {
-    const questRef = questsPortalDB.child(`${category}/${quest}`);
-    questRef.push({
-        userName: userName,
-        downloadTime: downloadTimestamp,
-        submissionDeadline: submissionDeadline
-    }).catch((error) => {
-        console.error("Error saving download details:", error);
-        alert("An error occurred while saving the download details.");
-    });
-}
+        // Function to export Firebase data to Excel
+        function exportToExcel() {
+            const category = document.getElementById("exportCategory").value; // Selected category
+            const questRef = category ? questsportalDB.child(category) : questsportalDB; // Reference all or specific
 
-// Calculate submission deadline (3 days from download time)
-function calculateSubmissionDeadline(downloadTimestamp) {
-    const downloadDate = new Date(downloadTimestamp);
-    downloadDate.setDate(downloadDate.getDate() + 3);
-    return downloadDate.toISOString();
-}
+            // Fetch data from Firebase
+            questRef.once("value")
+                .then((snapshot) => {
+                    const data = snapshot.val();
 
-// Helper function to get input values
-function getElementVal(id) {
-    return document.getElementById(id).value;
-}
+                    if (!data) {
+                        alert("No data available.");
+                        return;
+                    }
+
+                    // Prepare data for Excel
+                    const rows = [];
+
+                    // Header row
+                    rows.push(["Key", "Name", "Quest", "Downloaded At", "Submission Deadline"]);
+
+                    // Populate rows with data
+                    Object.entries(data).forEach(([key, value]) => {
+                        if (typeof value === 'object') { // Ensure value is a valid object
+                            rows.push([
+                                key,
+                                value.userName || "N/A",
+                                value.quest || "N/A",
+                                value.downloadedAt || "N/A",
+                                value.submissionDeadline || "N/A"
+                            ]);
+                        }
+                    });
+
+                    // Create a workbook and a worksheet
+                    const workbook = XLSX.utils.book_new();
+                    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+                    const sheetName = category || "All_Categories";
+                    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+                    // Write the Excel file and trigger download
+                    const excelFileName = `${sheetName}_data.xlsx`;
+                    XLSX.writeFile(workbook, excelFileName);
+                })
+                .catch((error) => {
+                    console.error("Error fetching data for export:", error);
+                    alert("An error occurred while fetching data for export.");
+                });
+        }
+
+                    
+            
+
+
+    // ——————————————————————————————————————————————————
+    //                  PRE-LOADER
+    // ——————————————————————————————————————————————————
+
+
+
+        // Preloader page loading
+
+        var loader = document.querySelector(".preloader");
+
+        window.addEventListener("load", ()=>{
+            loader.style.display = "none";
+        });
+
+
+// Text Effect
+
+        class TextScramble {
+        constructor(el) {
+            this.el = el;
+            this.chars = "!<>-_\\/[]{}—=+*^?#__@^%%$&()";
+            this.update = this.update.bind(this);
+        }
+        setText(newText) {
+            const oldText = this.el.innerText;
+            const length = Math.max(oldText.length, newText.length);
+            const promise = new Promise(resolve => this.resolve = resolve);
+            this.queue = [];
+            for (let i = 0; i < length; i++) {
+            const from = oldText[i] || '';
+            const to = newText[i] || '';
+            const start = Math.floor(Math.random() * 70);
+            const end = start + Math.floor(Math.random() * 70);
+            this.queue.push({ from, to, start, end });
+            }
+            cancelAnimationFrame(this.frameRequest);
+            this.frame = 0;
+            this.update();
+            return promise;
+        }
+        update() {
+            let output = "";
+            let complete = 0;
+            for (let i = 0, n = this.queue.length; i < n; i++) {
+            let { from, to, start, end, char } = this.queue[i];
+            if (this.frame >= end) {
+                complete++;
+                output += to;
+            } else if (this.frame >= start) {
+                if (!char || Math.random() < 0.28) {
+                char = this.randomChar();
+                this.queue[i].char = char;
+                }
+                output += `<span class="dud">${char}</span>`;
+            } else {
+                output += from;
+            }
+            }
+            this.el.innerHTML = output;
+            if (complete === this.queue.length) {
+            this.resolve();
+            } else {
+            this.frameRequest = requestAnimationFrame(this.update);
+            this.frame++;
+            }
+        }
+        randomChar() {
+            return this.chars[Math.floor(Math.random() * this.chars.length)];
+        }}
+
+
+
+            const phrases = [
+            "WE",
+        "WELCOME",
+        "YOU!!!"];
+
+
+        const el = document.querySelector(".text");
+        const fx = new TextScramble(el);
+
+        let counter = 0;
+        const next = () => {
+            fx.setText(phrases[counter]).then(() => {
+                setTimeout(next, 1000);
+            });
+            counter = (counter + 1) % phrases.length;
+        };
+
+        next();
