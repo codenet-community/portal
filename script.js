@@ -27,7 +27,7 @@
         "Backend": [],
         "Ui_Ux": ["UI_UX_DESIGN-1"],
         "Game_dev": [],
-        "App_Dev": [],
+        "App_Dev": ["APP_DEVELOPMENT_1"],
         "competitive_prog": []
     };
 
