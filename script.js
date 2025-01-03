@@ -24,7 +24,7 @@
 
     const quests = {
         "Frontend": ["HTML_Basics_Your_First_Webpage","quest-2"],
-        "Backend": [],
+        "Backend": ["BACKEND_WEB_DEVLOPMENT_1"],
         "Ui_Ux": ["UI_UX_DESIGN-1"],
         "Game_dev": ["GAME_DEVELOPMENT_1"],
         "App_Dev": [],
