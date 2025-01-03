@@ -27,8 +27,8 @@
         "Backend": [],
         "Ui_Ux": ["UI_UX_DESIGN-1"],
         "Game_dev": ["GAME_DEVELOPMENT_1"],
-        "App_Dev": ["APP_DEVELOPMENT_1"],
-        "competitive_prog": []
+        "App_Dev": [],
+        "competitive_prog": ["COMPETITIVE_PROGRAMMING_1"]
     };
 
     // Populate quests based on category selection
