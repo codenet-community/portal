@@ -26,7 +26,7 @@
         "Frontend": ["HTML_Basics_Your_First_Webpage","quest-2"],
         "Backend": [],
         "Ui_Ux": ["UI_UX_DESIGN-1"],
-        "Game_dev": [GAME_DEVELOPMENT_1],
+        "Game_dev": ["GAME_DEVELOPMENT_1],
         "App_Dev": ["APP_DEVELOPMENT_1"],
         "competitive_prog": []
     };
