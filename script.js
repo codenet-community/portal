@@ -77,7 +77,7 @@
 
     const downloadTime = new Date();
     const deadline = new Date();
-    deadline.setDate(downloadTime.getDate() + 7);
+    deadline.setDate(downloadTime.getDate() + 10);
 
     // Function to format the date and time
     function formatISTDateTime(date) {
