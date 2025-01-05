@@ -1,0 +1,214 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Mukta:wght@200;300;400;500;600;700;800&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Tomorrow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*{
+  margin:0;
+  padding: 0;
+  box-sizing: border-box;
+}
+    
+
+:root{
+  --MAIN-COLOR: #2084ac;
+
+
+  --slice-0: inset(50% 50% 50% 50%);
+  --slice-1: inset(70% -6px 0 0);
+  --slice-2: inset(50% -6px 30% 0);
+  --slice-3: inset(10% -6px 85% 0);
+  --slice-4: inset(40% -6px 43% 0);
+  --slice-5: inset(80% -6px 5% 0);
+  
+}
+
+
+/* Preloader */
+
+.preloader
+{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 1000;
+/*  background: radial-gradient(circle at top right, rgba(121, 68, 154, 0.13),transparent),
+  radial-gradient(circle at 20% 80%, rgba(41, 196, 255, 0.13), transparent) ;; */
+  background: #000;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: column;
+}
+
+
+
+.loader_content{
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader_content img{
+  width: 25%;
+  height: auto;
+  animation: flicker 1s infinite ease-out ;
+  animation-direction: alternate-reverse;
+}
+
+svg{
+  width: 80px;
+  color: var(--MAIN-COLOR);
+  padding-left: 1.5rem;
+
+}
+
+
+@keyframes flicker{
+  0%{
+    opacity: 0;
+  }
+  25%{
+    opacity: 0.25;
+  }
+  50%{
+    opacity: 0.5;
+  }
+  75%{
+    opacity: 0.75;
+  }
+  100%{
+    opacity: 1;
+  }
+
+}
+
+.text {
+  font-weight: 100;
+  font-size: 28px;
+  color: var(--MAIN-COLOR);
+  font-family: "Montserrat", serif;
+  font-optical-sizing: auto;
+  font-weight: bold;
+  font-style: normal;
+  font-size:2.5rem ;
+  display: block;
+  word-spacing: 2rem;
+  margin-bottom: -3rem;
+}
+.dud {
+  color: #f7f7f7;
+}
+
+/* START BUTTON */
+
+.go_button,
+.go_button:after {
+  width: 12rem;
+  height: 4.5rem;
+  font-size: 1.5em;
+  font-family: 'Bebas Neue', sans-serif;
+  background: var(--MAIN-COLOR) /* linear-gradient(45deg, transparent 5%, #0096d6e0 5%) */;
+  border-radius: 6%;
+  border: 0;
+  color: #fff;
+  letter-spacing: 1px;
+  box-shadow: #5E5DF0 0 10px 20px -10px;
+  outline: transparent;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+
+}
+
+.go_button:after {
+  
+  content: 'Click Me';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 3%, #ffffff 3%, #ffffff 5%, rgb(55, 146, 231) 5%);
+  text-shadow: -3px -3px 0px #F8F005, 3px 3px 0px #00E6F6;
+  clip-path: var(--slice-0);
+}
+
+.go_button:hover:after {
+  animation: 1s glitch;
+  animation-timing-function: steps(2, end);
+  
+  
+  
+  
+}
+
+@keyframes glitch {
+  0% {
+    clip-path: var(--slice-1);
+    transform: translate(-20px, -10px);
+  }
+  10% {
+    clip-path: var(--slice-3);
+    transform: translate(10px, 10px);
+  }
+  20% {
+    clip-path: var(--slice-1);
+    transform: translate(-10px, 10px);
+  }
+  30% {
+    clip-path: var(--slice-3);
+    transform: translate(0px, 5px);
+  }
+  40% {
+    clip-path: var(--slice-2);
+    transform: translate(-5px, 0px);
+  }
+  50% {
+    clip-path: var(--slice-3);
+    transform: translate(5px, 0px);
+  }
+  60% {
+    clip-path: var(--slice-4);
+    transform: translate(5px, 10px);
+  }
+  70% {
+    clip-path: var(--slice-2);
+    transform: translate(-10px, 10px);
+  }
+  80% {
+    clip-path: var(--slice-5);
+    transform: translate(20px, -10px);
+  }
+  90% {
+    clip-path: var(--slice-1);
+    transform: translate(-10px, 0px);
+  }
+  100% {
+    clip-path: var(--slice-1);
+    transform: translate(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .go_button,
+  .go_button:after {
+    width: 200px;
+    height: 86px;
+    line-height: 88px;
+  }
+}
+
+@media screen and (max-width:768px){
+  .loader_content img{
+  width: 55%;
+  height: auto;
+
+  
+}
+}
+
+
