@@ -27,8 +27,8 @@
                     <label for="categorySelect">Quest Category</label>
                     <select id="categorySelect" required>
                         <option value="" disabled selected>Select Category</option>
-                        <option value="Frontend">Frontend </option>
-                        <option value="Backend">Backend </option>
+                        <option value="Frontend">Frontend</option>
+                        <option value="Backend">Backend</option>
                         <option value="Ui_Ux">UI & UX</option>
                         <option value="Game_dev">Game Development</option>
                         <option value="App_Dev">App Development</option>
@@ -62,7 +62,6 @@
     <!-- User Profile Section (Optional, can show user details) -->
     <div id="user-profile" style="display:none;">
       <p>Welcome, <span id="user-name"></span>!</p>
-      <!-- <p>Email: <span id="user-email"></span></p> -->
     </div>
 
     <!-- Clerk Script -->
@@ -87,13 +86,6 @@
           // Optionally, display user information
           document.getElementById('user-profile').style.display = 'block';
           document.getElementById('user-name').innerText = Clerk.user.firstName + " " + Clerk.user.lastName;
-          // document.getElementById('user-email').innerText = Clerk.user.email;
-
-          // Mount the User Button (logout button)
-          const userButtonDiv = document.createElement('div');
-          userButtonDiv.id = 'user-button';
-          document.body.appendChild(userButtonDiv);
-          Clerk.mountUserButton(userButtonDiv);
         }
       });
 
@@ -104,29 +96,83 @@
           window.location.href = 'index.html'; // Redirect to login page after logout
         });
       });
+
+      // Store quest file paths for each category
+      const quests = {
+        "Frontend": "quests/HTML_Basics_Your_First_Webpage.pdf",
+        "Backend": "quests/BACKEND_WEB_DEVLOPMENT_1.pdf",
+        "Ui_Ux": "quests/UI_UX_DESIGN-1.pdf",
+        "Game_dev": "quests/COMPETITIVE_PROGRAMMING_1.pdf",
+        "App_Dev": "quests/GAME_DEVELOPMENT_1.pdf",
+        "competitive_prog": "quests/COMPETITIVE_PROGRAMMING_1.pdf"
+      };
+
+      // Listen for category selection and update quest options
+      document.getElementById('categorySelect').addEventListener('change', function() {
+        const category = this.value;
+        const questSelect = document.getElementById('questSelect');
+
+        // Clear previous options
+        questSelect.innerHTML = '<option value="" disabled selected>Select Quest</option>';
+
+        // If the selected category has a quest file
+        if (quests[category]) {
+          const option = document.createElement('option');
+          option.value = quests[category];
+          option.textContent = quests[category].split('/').pop();  // Use filename itself
+          questSelect.appendChild(option);
+        }
+      });
+
+      // Handle form submission (Download Quest)
+      document.getElementById('questPortalForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent page reload
+
+        const userName = document.getElementById('userName').value;
+        const category = document.getElementById('categorySelect').value;
+        const questFile = document.getElementById('questSelect').value;
+
+        if (!userName || !category || !questFile) {
+          alert("Please fill out all fields.");
+          return;
+        }
+
+        // Log or handle the form data, for example, store it in Firebase or show success message
+        console.log(`User: ${userName}, Category: ${category}, Quest File: ${questFile}`);
+
+        // Show success message
+        document.getElementById('successMessage').style.display = 'block';
+
+        // Create the download link dynamically
+        const downloadLink = document.createElement('a');
+        downloadLink.href = questFile;  // Set the file path
+        downloadLink.download = questFile.split('/').pop();  // Set the filename to download
+
+        // Trigger the download by programmatically clicking the link
+        downloadLink.click();
+      });
     </script>
 
-<div class="title --down-space">
-  <p>See what Everyone is Doing </p>
-</div>
+    <div class="title --down-space">
+      <p>See what Everyone is Doing </p>
+    </div>
 
-<section class="main_section2 ">
-  <div class="info_container">
-      <div class="Btn ">
-          <select class="select" id="exportCategory">
-              <option value="" selected>Select Category</option>
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="Ui_Ux">UI & UX</option>
-              <option value="Game_dev">Game Development</option>
-              <option value="App_Dev">App Development</option>
-              <option value="competitive_prog">Competitive Programming</option>
-          </select>
+    <section class="main_section2 ">
+      <div class="info_container">
+          <div class="Btn ">
+              <select class="select" id="exportCategory">
+                  <option value="" selected>Select Category</option>
+                  <option value="Frontend">Frontend</option>
+                  <option value="Backend">Backend</option>
+                  <option value="Ui_Ux">UI & UX</option>
+                  <option value="Game_dev">Game Development</option>
+                  <option value="App_Dev">App Development</option>
+                  <option value="competitive_prog">Competitive Programming</option>
+              </select>
+          </div>
+          <button type="button" class="exportBtn" onclick="exportToExcel()">Download</button>
       </div>
-      <button type="button" class="exportBtn" onclick="exportToExcel()">Download</button>
-  </div>
-
-</section>
+    </section>
 
 </body>
 </html>
